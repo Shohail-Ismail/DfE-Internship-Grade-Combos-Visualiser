@@ -1,4 +1,4 @@
-# Department for Education Grade Combinations Viewer
+# Department for Education: A-Level Grade Combinations Analyser
 
    * [Background information](#background-information)
    * [Core features](#core-features)
@@ -9,13 +9,13 @@
 
 ## Background information
 
-The **Department for Education (DfE) Grade Combinations Viewer** is an R Shiny application developed during a UK Department for Education internship. It visualises precomputed A-Level subject pairings and student performance (PPE scores) to support decision-making by students, parents, and University admissions boards. Presented toa  group of interdepartmental policymakers and OFQUAL analysts, it is now under review for further features to be added (i.e., separating by sex, postcode, etc.).
+The **Department for Education (DfE) A-Level Grade Combinations Analyser** is an R Shiny application developed during a UK DfE internship. It visualises precomputed A-Level subject pairings and student performance (PPE scores) to support decision-making by students, parents, and University admissions boards. Presented to a group of interdepartmental policymakers and OFQUAL analysts, it is now under review for further features to be added (i.e., separating by sex, postcode, etc.).
 
 Designed for interpretability and policy relevance, the app allows users to:
 
-- Explore how often subject combinations occur
+- Explore how often subject combinations occur, and the relevance between getting grades in one A-Level subject to others (i.e., how getting an A in Mathematics affects students' grades in Physics)
 - View grade distributions across individual subjects
-- Compare normalised performance outcomes (PPE) between groups of students based on subject pairings
+- Compare normalised PPE scores between groups of students based on subject pairings, as well as percentage-wise comparisons
 
 All data is fully **preprocessed outside the app** - no calculations or inference are performed within the application. This ensures clarity, reproducibility, and speed.
 
@@ -39,10 +39,16 @@ All data is fully **preprocessed outside the app** - no calculations or inferenc
   - **Performance comparisons are hidden** in this view to avoid misinterpretation
   - A clear in-app explanation is displayed to reinforce this
 
-- **Designed for non-techincal end users**  
+- **Designed for non-techincal users**  
   - No policy knowledge is required
   - Neutral UI language (e.g. avoids “correlation”, “impact”, “increase”)
   - Clean layout using `fluidPage()` and `tabsetPanel()` with scrollable, readable tables
+  - **Dark mode** available for accessibility and usability purposes
+ 
+
+### App preview
+
+
 
 ---
 
