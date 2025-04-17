@@ -66,6 +66,9 @@ All data is fully **preprocessed outside the app** - no calculations or inferenc
   - The app is explicitly non-inferential - no significance testing or causal claims
   - PPE comparisons are **descriptive only** and based on precomputed values
 
+- **No specific grades**
+  - Cannot see how many students got a specific grade, (i.e., cannot see how many students got exactly a B in Mathematics, only how many got B and above)
+
 - **Grade filter disables comparisons**  
   - When filtering by grade (Tab 3), performance differences are removed to avoid misleading conclusions based on subgroups
 
