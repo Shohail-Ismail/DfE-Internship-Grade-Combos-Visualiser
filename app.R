@@ -5,10 +5,8 @@ library(DT)
 library(shinyalert)
 library(plotly)
 
-# Load cleaned dataset
 data <- read_csv("SubjectComb_Final_RANDOMISED.csv")
 
-# Reversed grade band order for left-to-right hierarchy (broadest → narrowest)
 grade_levels <- c("A*", "A and above", "B and above", "C and above", "D and above", "E and above", "U and above")
 
 subject_input <- function(id) {
@@ -39,7 +37,7 @@ ui <- fluidPage(
   
   titlePanel("DfE Grade Combinations Viewer"),
   
-  checkboxInput("dark_mode", "Enable dark mode", value = FALSE),
+  checkboxInput("dark_mode", "Enablle dark mode", value = FALSE),
   
   tabsetPanel(
     
@@ -118,7 +116,6 @@ server <- function(input, output, session) {
                 selected = "")
   })
   
-  # --- Tab 1: Grade Distribution ---
   output$subject_grade_plot <- renderPlotly({
     req(input$subject_dist != "")
     
@@ -159,18 +156,27 @@ server <- function(input, output, session) {
       )
   })
   
-  # --- Tab 2: Subject Combinations (All grades) ---
   filtered_all_data <- reactive({
     req(input$subject_all)
+    
     data %>%
       filter(subject_1 == input$subject_all) %>%
       mutate(
         PPE_TakingSubj2 = as.numeric(trimws(PPE_TakingSubj2)),
-        PPE_NOTTakingSubj2 = as.numeric(trimws(PPE_NOTTakingSubj2)),
-        raw_diff = PPE_TakingSubj2 - PPE_NOTTakingSubj2
+        PPE_NOTTakingSubj2 = as.numeric(trimws(PPE_NOTTakingSubj2))
       ) %>%
+      group_by(subject_1, subject_2) %>%
+      summarise(
+        number_students = sum(number_students, na.rm = TRUE),
+        PPE_TakingSubj2 = mean(PPE_TakingSubj2, na.rm = TRUE),
+        PPE_NOTTakingSubj2 = mean(PPE_NOTTakingSubj2, na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      mutate(raw_diff = PPE_TakingSubj2 - PPE_NOTTakingSubj2) %>%
       arrange(desc(number_students))
   })
+  
+  
   
   output$top_pairings_all <- renderUI({
     df <- filtered_all_data() %>% filter(!is.na(raw_diff))
@@ -259,11 +265,11 @@ server <- function(input, output, session) {
     )
   })
   
-  # --- Tab 3: Filtered by grade ---
   filtered_grade_data <- reactive({
     req(input$subject_grade)
     
-    df <- data %>% filter(subject_1 == input$subject_grade)
+    df <- data %>%
+      filter(subject_1 == input$subject_grade)
     
     if (input$grade_filter != "") {
       grade_lookup <- case_when(
@@ -279,7 +285,10 @@ server <- function(input, output, session) {
       df <- df %>% filter(Grade_1 == grade_lookup)
     }
     
-    df %>% arrange(desc(number_students))
+    df %>%
+      group_by(subject_1, subject_2) %>%
+      summarise(number_students = sum(number_students, na.rm = TRUE), .groups = "drop") %>%
+      arrange(desc(number_students))
   })
   
   output$grade_filter_warning <- renderUI({
@@ -295,7 +304,7 @@ server <- function(input, output, session) {
   
   output$subject_combinations_table_filtered <- renderDT({
     df <- filtered_grade_data()
-    if (nrow(df) == 0) return(datatable(data.frame(Message = "No combinations found.")))
+    if (nrow(df) == 0) return(datatable(data.frame(Message = "No cobminations found.")))
     
     df <- df %>%
       select(`Subject 1` = subject_1,
