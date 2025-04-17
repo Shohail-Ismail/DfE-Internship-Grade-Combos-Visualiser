@@ -158,11 +158,11 @@ server <- function(input, output, session) {
   
   filtered_all_data <- reactive({
     req(input$subject_all)
-    
+    # 
     data %>%
       filter(subject_1 == input$subject_all) %>%
       mutate(
-        PPE_TakingSubj2 = as.numeric(trimws(PPE_TakingSubj2)),
+        PPE_TakingSubj2 = suppressWarnings(as.numeric(trimws(PPE_TakingSubj2))),
         PPE_NOTTakingSubj2 = as.numeric(trimws(PPE_NOTTakingSubj2))
       ) %>%
       group_by(subject_1, subject_2) %>%
@@ -271,7 +271,7 @@ server <- function(input, output, session) {
     df <- data %>%
       filter(subject_1 == input$subject_grade)
     
-    if (input$grade_filter != "") {
+    if (!is.null(input$grade_filter) && input$grade_filter != "") {
       grade_lookup <- case_when(
         input$grade_filter == "A*" ~ "*",
         input$grade_filter == "A and above" ~ "A",
