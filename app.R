@@ -6,108 +6,179 @@ library(shinyalert)
 library(plotly)
 
 data <- read_csv("SubjectComb_Final_RANDOMISED.csv")
-
 grade_levels <- c("A*", "A and above", "B and above", "C and above", "D and above", "E and above", "U and above")
 
 subject_input <- function(id) {
-  selectInput(id, label = NULL,
-              choices = c("", sort(unique(data$subject_1))),
-              selected = "")
+  selectizeInput(id, label = NULL,
+                 choices = c("", sort(unique(data$subject_1))),
+                 selected = "",
+                 options = list(create = FALSE))
 }
 
-ui <- fluidPage(
-  uiOutput("dynamic_css"),
-  
-  tags$head(
-    tags$style(HTML("
-      .swal-button {
-        background-color: #005a9c !important;
-        color: white !important;
-      }
-      .sr-only {
-        position: absolute;
-        left: -10000px;
-        top: auto;
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-      }
-    "))
-  ),
-  
-  titlePanel("DfE Grade Combinations Viewer"),
-  
-  checkboxInput("dark_mode", "Enablle dark mode", value = FALSE),
-  
-  tabsetPanel(
+ui <- function(request) {
+  fluidPage(
+    tags$script(HTML("
+      Shiny.addCustomMessageHandler('toggle-dark', function(message) {
+        if (message) {
+          document.body.classList.add('dark-mode');
+        } else {
+          document.body.classList.remove('dark-mode');
+        }
+      });
+    ")),
     
-    tabPanel("Grade Distribution",
-             sidebarLayout(
-               sidebarPanel(
-                 tags$label(`for` = "subject_dist", class = "sr-only", "Select subject:"),
-                 subject_input("subject_dist")
-               ),
-               mainPanel(
-                 div(
-                   `aria-label` = "Bar chart of grade distribution by subject",
-                   plotlyOutput("subject_grade_plot")
-                 )
-               )
-             )
-    ),
+    uiOutput("dynamic_css"),
     
-    tabPanel("Subject Combinations (All grades)",
-             sidebarLayout(
-               sidebarPanel(
-                 tags$label(`for` = "subject_all", class = "sr-only", "Select subject:"),
-                 subject_input("subject_all"),
-                 downloadButton("download_all", "Download table as CSV")
-               ),
-               mainPanel(
-                 uiOutput("top_pairings_all"),
-                 DTOutput("subject_combinations_table_all")
-               )
-             )
-    ),
-    
-    tabPanel("Subject Combinations (Filter by grade)",
-             sidebarLayout(
-               sidebarPanel(
-                 tags$label(`for` = "subject_grade", class = "sr-only", "Select subject:"),
-                 subject_input("subject_grade"),
-                 uiOutput("grade_filter_ui"),
-                 downloadButton("download_filtered", "Download table as CSV")
-               ),
-               mainPanel(
-                 uiOutput("grade_filter_warning"),
-                 DTOutput("subject_combinations_table_filtered")
-               )
-             )
-    )
-  )
-)
-
-server <- function(input, output, session) {
-  
-  output$dynamic_css <- renderUI({
-    if (input$dark_mode) {
+    tags$head(
       tags$style(HTML("
-        body {
+        body.dark-mode {
           background-color: #121212 !important;
           color: #f5f5f5 !important;
         }
-        .well, .form-control, .dataTables_wrapper {
+
+        body.dark-mode h1, 
+        body.dark-mode h2, 
+        body.dark-mode .title {
+          color: #f5f5f5 !important;
+        }
+
+        body.dark-mode .nav-tabs > li > a {
+          background-color: #2a2a2a !important;
+          color: #cccccc !important;
+        }
+
+        body.dark-mode .nav-tabs > li.active > a {
+          background-color: #1e1e1e !important;
+          color: #ffffff !important;
+          border-color: #444 !important;
+        }
+
+        body.dark-mode .form-control, 
+        body.dark-mode .selectize-input,
+        body.dark-mode .selectize-dropdown,
+        body.dark-mode .shiny-input-container,
+        body.dark-mode .btn,
+        body.dark-mode .shiny-download-link {
+          background-color: #1e1e1e !important;
+          color: #f5f5f5 !important;
+          border-color: #555 !important;
+        }
+
+        body.dark-mode .selectize-input::after {
+          border-top: 5px solid #f5f5f5 !important;
+        }
+
+        body.dark-mode table.dataTable,
+        body.dark-mode table.dataTable thead,
+        body.dark-mode table.dataTable tbody,
+        body.dark-mode table.dataTable td,
+        body.dark-mode table.dataTable th {
           background-color: #1e1e1e !important;
           color: #f5f5f5 !important;
         }
-        table.dataTable td {
+
+        body.dark-mode .dataTables_info,
+        body.dark-mode .dataTables_filter label,
+        body.dark-mode .dataTables_length label,
+        body.dark-mode .paginate_button,
+        body.dark-mode .explanation-box,
+        body.dark-mode #footer {
+          color: #f5f5f5 !important;
+        }
+
+        body.dark-mode .fixed-footer {
+          background-color: #1e1e1e;
+          color: #f5f5f5;
+          border-top: 1px solid #444;
+        }
+
+        body.dark-mode a {
+          color: #81caff !important;
+        }
+
+        .swal-button {
+          background-color: #005a9c !important;
           color: white !important;
         }
+
+        .sr-only {
+          position: absolute;
+          left: -10000px;
+          top: auto;
+          width: 1px;
+          height: 1px;
+          overflow: hidden;
+        }
+
+        .fixed-footer {
+          position: fixed;
+          bottom: 0;
+          width: 100%;
+          background-color: #f0f0f0;
+          padding: 10px;
+          border-top: 1px solid #ccc;
+          text-align: center;
+          z-index: 9999;
+        }
       "))
-    } else {
-      tags$style("")
-    }
+    ),
+    
+    titlePanel(div("DfE Grade Combinations Viewer", class = "title")),
+    checkboxInput("dark_mode", "Enable dark mode", value = FALSE),
+    
+    tabsetPanel(
+      tabPanel("Grade Distribution",
+               sidebarLayout(
+                 sidebarPanel(subject_input("subject_dist")),
+                 mainPanel(plotlyOutput("subject_grade_plot"))
+               )
+      ),
+      tabPanel("Subject Combinations (All grades)",
+               sidebarLayout(
+                 sidebarPanel(
+                   subject_input("subject_all"),
+                   downloadButton("download_all", "Download table as CSV")
+                 ),
+                 mainPanel(
+                   uiOutput("top_pairings_all"),
+                   DTOutput("subject_combinations_table_all")
+                 )
+               )
+      ),
+      tabPanel("Subject Combinations (Filter by grade)",
+               sidebarLayout(
+                 sidebarPanel(
+                   subject_input("subject_grade"),
+                   uiOutput("grade_filter_ui"),
+                   downloadButton("download_filtered", "Download table as CSV")
+                 ),
+                 mainPanel(
+                   uiOutput("grade_filter_warning"),
+                   DTOutput("subject_combinations_table_filtered")
+                 )
+               )
+      )
+    ),
+    
+    tags$div(
+      id = "footer",
+      class = "fixed-footer",
+      tags$p("This tool was developed using preprocessed data to support internal exploration of A-Level subject combinations and performance. For full national results and methodological notes, visit the official publication:"),
+      tags$a(
+        href = "https://explore-education-statistics.service.gov.uk/find-statistics/a-level-and-other-16-to-18-results/2023-24",
+        "Explore Education Statistics – A level and other 16 to 18 results (2023/24)",
+        target = "_blank"
+      )
+    )
+  )
+}
+
+server <- function(input, output, session) {
+  observe({
+    session$sendCustomMessage("toggle-dark", input$dark_mode)
   })
+  
+  output$dynamic_css <- renderUI({ NULL })
   
   output$grade_filter_ui <- renderUI({
     req(input$subject_grade != "")
@@ -118,7 +189,6 @@ server <- function(input, output, session) {
   
   output$subject_grade_plot <- renderPlotly({
     req(input$subject_dist != "")
-    
     df <- data %>%
       filter(subject_1 == input$subject_dist, !is.na(Grade_1)) %>%
       mutate(
@@ -152,13 +222,15 @@ server <- function(input, output, session) {
       layout(
         title = paste("Grade distribution for", input$subject_dist),
         xaxis = list(title = "Grade band"),
-        yaxis = list(title = "Number of students")
+        yaxis = list(title = "Number of students"),
+        plot_bgcolor = "#1e1e1e",
+        paper_bgcolor = "#1e1e1e",
+        font = list(color = "white")
       )
   })
   
   filtered_all_data <- reactive({
     req(input$subject_all)
-    # 
     data %>%
       filter(subject_1 == input$subject_all) %>%
       mutate(
@@ -176,8 +248,6 @@ server <- function(input, output, session) {
       arrange(desc(number_students))
   })
   
-  
-  
   output$top_pairings_all <- renderUI({
     df <- filtered_all_data() %>% filter(!is.na(raw_diff))
     if (nrow(df) == 0) return(NULL)
@@ -186,7 +256,8 @@ server <- function(input, output, session) {
     top_negative <- df %>% arrange(raw_diff) %>% slice(1)
     
     tags$div(
-      style = "background-color: #f9f9f9; padding: 10px; border: 1px solid #ccc;",
+      class = "explanation-box",
+      style = "padding: 10px; margin-bottom: 10px;",
       tags$p(tags$b("Top pairings for "), input$subject_all, ":"),
       tags$ul(
         tags$li(
@@ -208,11 +279,7 @@ server <- function(input, output, session) {
     if (nrow(df) == 0) return(datatable(data.frame(Message = "No combinations found.")))
     
     df <- df %>%
-      mutate(`Performance diff (PTS)` = ifelse(
-        is.na(raw_diff),
-        NA,
-        sprintf("%+.1f PTS", raw_diff)
-      )) %>%
+      mutate(`Performance diff (PTS)` = ifelse(is.na(raw_diff), NA, sprintf("%+.1f PTS", raw_diff))) %>%
       select(`Subject 1` = subject_1,
              `Subject 2` = subject_2,
              `Number of students` = number_students,
@@ -231,19 +298,9 @@ server <- function(input, output, session) {
               rownames = FALSE)
   })
   
-  output$download_all <- downloadHandler(
-    filename = function() {
-      paste0("subject_combinations_", input$subject_all, ".csv")
-    },
-    content = function(file) {
-      write.csv(filtered_all_data(), file, row.names = FALSE)
-    }
-  )
-  
   observeEvent(input$subject_combinations_table_all_rows_selected, {
     row_index <- input$subject_combinations_table_all_rows_selected
     df <- filtered_all_data()
-    
     if (length(row_index) == 0 || row_index > nrow(df)) return()
     row <- df[row_index, ]
     
@@ -258,18 +315,14 @@ server <- function(input, output, session) {
     
     shinyalert(
       title = paste(row$subject_1, "+", row$subject_2),
-      text = paste0(
-        "Number of students: ", row$number_students, "\n\n", explanation
-      ),
+      text = paste0("Number of students: ", row$number_students, "\n\n", explanation),
       type = "info"
     )
   })
   
   filtered_grade_data <- reactive({
     req(input$subject_grade)
-    
-    df <- data %>%
-      filter(subject_1 == input$subject_grade)
+    df <- data %>% filter(subject_1 == input$subject_grade)
     
     if (!is.null(input$grade_filter) && input$grade_filter != "") {
       grade_lookup <- case_when(
@@ -294,7 +347,8 @@ server <- function(input, output, session) {
   output$grade_filter_warning <- renderUI({
     req(input$grade_filter != "")
     tags$div(
-      style = "background-color: #fff3cd; border-left: 5px solid #ff9800; padding: 10px; margin-bottom: 10px;",
+      class = "explanation-box",
+      style = "padding: 10px; margin-bottom: 10px;",
       tags$p(
         tags$b("Note: "),
         "Performance differences are hidden in this view because comparisons are only valid across all grade levels."
@@ -304,7 +358,7 @@ server <- function(input, output, session) {
   
   output$subject_combinations_table_filtered <- renderDT({
     df <- filtered_grade_data()
-    if (nrow(df) == 0) return(datatable(data.frame(Message = "No cobminations found.")))
+    if (nrow(df) == 0) return(datatable(data.frame(Message = "No combinations found.")))
     
     df <- df %>%
       select(`Subject 1` = subject_1,
@@ -313,12 +367,18 @@ server <- function(input, output, session) {
     
     datatable(df,
               selection = "none",
-              options = list(
-                pageLength = 10,
-                order = list(list(2, 'desc'))
-              ),
+              options = list(pageLength = 10),
               rownames = FALSE)
   })
+  
+  output$download_all <- downloadHandler(
+    filename = function() {
+      paste0("subject_combinations_", input$subject_all, ".csv")
+    },
+    content = function(file) {
+      write.csv(filtered_all_data(), file, row.names = FALSE)
+    }
+  )
   
   output$download_filtered <- downloadHandler(
     filename = function() {
