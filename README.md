@@ -51,11 +51,10 @@ All data is fully **preprocessed outside the app** - no calculations or inferenc
 #### Tab 1: Grade distribution checker
 ![Tab 1](DfE-App-Tab1.png)
 
-### Tab 2: Overall grade combinations
+#### Tab 2: Overall grade combinations
 ![Tab 2](DfE-App-Tab3.png)
 
-### Example run 3: 
-#### Grade-filtered grade combinations
+#### Tab 3: Grade-filtered grade combinations
 ![Tab 3](DfE-App-Tab2.png)
 
 ---
