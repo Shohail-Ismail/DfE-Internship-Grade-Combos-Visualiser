@@ -7,10 +7,11 @@ library(plotly)
 
 data <- read_csv("SubjectComb_Final_RANDOMISED.csv")
 grade_levels <- c("A*", "A and above", "B and above", "C and above", "D and above", "E and above", "U and above")
+all_subjects <- sort(unique(c(data$subject_1, data$subject_2)))
 
 subject_input <- function(id) {
   selectizeInput(id, label = NULL,
-                 choices = c("", sort(unique(data$subject_1))),
+                 choices = c("", all_subjects),
                  selected = "",
                  options = list(create = FALSE))
 }
@@ -95,6 +96,15 @@ ui <- function(request) {
         body.dark-mode a {
           color: #81caff !important;
         }
+        
+        .selectize-dropdown-content {
+          max-height: 600px !important;
+          overflow-y: auto !important;
+        }
+        
+        .selectize-dropdown {
+          z-index: 9999 !important;
+        }
 
         .swal-button {
           background-color: #005a9c !important;
@@ -123,7 +133,7 @@ ui <- function(request) {
       "))
     ),
     
-    titlePanel(div("DfE Grade Combinations Viewer", class = "title")),
+    titlePanel(div("Department for Education A-Level Grade Combinations Viewer", class = "title")),
     checkboxInput("dark_mode", "Enable dark mode", value = FALSE),
     
     tabsetPanel(
@@ -163,7 +173,7 @@ ui <- function(request) {
     tags$div(
       id = "footer",
       class = "fixed-footer",
-      tags$p("This tool was developed using preprocessed data to support internal exploration of A-Level subject combinations and performance. For full national results and methodological notes, visit the official publication:"),
+      tags$p("This tool was developed using preprocessed data to support internal and public exploration of A-Level subject combinations and performance. For full national results and methodological notes, visit the official publication:"),
       tags$a(
         href = "https://explore-education-statistics.service.gov.uk/find-statistics/a-level-and-other-16-to-18-results/2023-24",
         "Explore Education Statistics – A level and other 16 to 18 results (2023/24)",
@@ -223,9 +233,9 @@ server <- function(input, output, session) {
         title = paste("Grade distribution for", input$subject_dist),
         xaxis = list(title = "Grade band"),
         yaxis = list(title = "Number of students"),
-        plot_bgcolor = "#1e1e1e",
-        paper_bgcolor = "#1e1e1e",
-        font = list(color = "white")
+        plot_bgcolor = if (input$dark_mode) "#1e1e1e" else "white",
+        paper_bgcolor = if (input$dark_mode) "#1e1e1e" else "white",
+        font = list(color = if (input$dark_mode) "white" else "black")
       )
   })
   
