@@ -9,7 +9,7 @@
 
 ## Background information
 
-The **Department for Education (DfE) A-Level Grade Combinations Analyser** is an R Shiny application developed during a UK DfE internship. It visualises precomputed A-Level subject pairings and student performance (PPE scores) to support decision-making by students, parents, and University admissions boards. Presented to a group of interdepartmental policymakers and Ofqual analysts, it is now under review for further features to be added (i.e., separating by sex, postcode, etc.).
+The **Department for Education (DfE) A-Level Grade Combinations Analyser** is an R Shiny application developed during my internship at the DfE. It visualises precomputed A-Level subject pairings and student performance (PPE scores) to support decision-making by students, parents, and University admissions boards. Presented to a group of interdepartmental policymakers and Ofqual analysts, it is now under review for further features to be added (i.e., separating by sex, postcode, etc.).
 
 Designed for interpretability and policy relevance, the app allows users to:
 
