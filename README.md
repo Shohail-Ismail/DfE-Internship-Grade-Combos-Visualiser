@@ -66,7 +66,7 @@ All data is fully **preprocessed outside the app** - no calculations or inferenc
   - PPE comparisons are **descriptive only** and based on precomputed values
 
 - **No specific grades**
-  - Cannot see how many students got a specific grade, (i.e., cannot see how many students got exactly a B in Mathematics, only how many got B and above)
+  - Cannot see how many students got a specific grade, (i.e., cannot see how many students got exactly a B in Mathematics, only how many got B and above). This is largely due to the specific functionality not being needed during the project, however it will likely be added in future updates.
 
 - **Grade filter disables comparisons**  
   - When filtering by grade (Tab 3), performance differences are removed to avoid misleading conclusions based on subgroups
